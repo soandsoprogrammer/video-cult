@@ -1,0 +1,19 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'pingfang', 'PingFang SC', 'Microsoft YaHei', '微软雅黑', 'Arial', sans-serif;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: transparent;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+[data-tauri-drag-region] {
+  -webkit-app-region: drag; /* 对于 macOS */
+  pointer-events: auto; /* 确保鼠标事件可以被传递 */
+}
