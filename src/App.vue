@@ -3,6 +3,7 @@ import Open from './assets/open.svg'
 import { open } from '@tauri-apps/plugin-dialog'
 import { ref } from "vue";
 import { Command } from '@tauri-apps/plugin-shell';
+import { openPath } from '@tauri-apps/plugin-opener';
 
 // import { invoke } from "@tauri-apps/api/core";
 const filePath = ref<string | null>(null);
@@ -67,7 +68,14 @@ const runCommand = async () => {
   ]).execute();
   console.log('处理结果:', res.stderr);
 }
+
+const handleOpenPath = async (path: string) => {
+  console.log(path);
+  await openPath(path);
+}
 </script>
+
+
 
 <template>
   <div class="con">
@@ -86,13 +94,15 @@ const runCommand = async () => {
         <span class="text">设置输出目录</span>
       </div>
       <div>
-        <div class="button">
+        <div class="button" @click="()=>{
+          handleOpenPath(outputFilePath!)
+        }">
           <span class="text">已选择输出目录: {{ outputFilePath }}</span>
         </div>
         <div class="button">
           <span class="text">已选择Cult文件: {{ cultFilePath }}</span>
         </div>
-        <div class="button">
+        <div class="button" @click="openPath(filePath!)">
           <span class="text">已选择视频文件: {{ filePath }}</span>
         </div>
         <div class="button" @click="runCommand">
