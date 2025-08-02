@@ -3,8 +3,8 @@ type CultInfo = {
   start_time: string;
   end_time: string;
   filename: string;
-  origin_start_time: string;
-  origin_end_time: string
+  original_start_time: string;
+  original_end_time: string
 }
 import Open from './assets/open.svg'
 import { open } from '@tauri-apps/plugin-dialog'
@@ -38,9 +38,9 @@ async function openFile() {
   })
   if (selected) {
     filePath.value = selected as string;
-    const dir = await path.appDataDir()
+    const dir = await path.pictureDir()
     await Command.sidecar('bin/ffmpeg', ['-y', '-i', selected, '-vframes', '1', '-f', 'image2', `${dir}/bg.png`]).execute();
-    invoke('get_first_frame', { filePath: `${dir}/bg.png` })
+    invoke('get_first_frame', { path: `${dir}/bg.png` })
       .then((data: any) => {
         console.log('获取第一帧成功:');
         background.value = arrayBufferToBase64(data)
@@ -48,10 +48,10 @@ async function openFile() {
       .catch((error) => {
         console.error('获取第一帧失败:', error);
       });
-    
+
     // console.log(dir);
     // console.log(`${}/bg.png`);
-    
+
   }
 }
 
@@ -93,12 +93,16 @@ const runCommand = async () => {
   console.log('开始处理');
   for (let i = 0; i < cultList.value.length; i++) {
     const element = cultList.value[i]
-    await Command.sidecar('bin/ffmpeg', [
+    const res = await Command.sidecar('bin/ffmpeg', [
       '-y', '-i', filePath.value!,
       '-ss', element.start_time, '-to', element.end_time,
       '-vn', '-acodec', 'copy',
       `${outputFilePath.value}/${element.filename}.wav`
     ]).execute();
+    if (res.code !== 0) {
+      console.error(`处理第 ${i + 1} 个音频失败:`, res.stderr);
+      continue;
+    }
     buttonText.value = `已生成${i}个`
   }
   loading.value = false
@@ -116,7 +120,8 @@ const handleOpenPath = async (path: string) => {
 
 <template>
   <div class="con">
-    <div data-tauri-drag-region class="main" :style="{ backgroundImage: `url(${background})` }">
+    <div data-tauri-drag-region class="main" >
+      <div class="cover" :style="{ backgroundImage: `url(${background})` }"></div>
       <div v-if="!filePath" class="button" @click="openFile">
         <Open class="icon" />
         <span class="text">打开视频文件</span>
@@ -152,7 +157,7 @@ const handleOpenPath = async (path: string) => {
             </span>
           </div>
 
-          <div >
+          <div>
             <span class="text item">
               <span class="label">已选择输出目录: </span>
               <span class="value">{{ outputFilePath }}</span>
@@ -169,8 +174,8 @@ const handleOpenPath = async (path: string) => {
             <div style="height: 100px; overflow: auto;">
               <ul>
                 <li v-for="(item, index) in cultList" :key="index">
-                  <span>{{ index+1 }}. {{ item.origin_start_time }} - {{ item.origin_end_time }} {{ item.filename
-                    }}</span>
+                  <span>{{ index + 1 }}. {{ item.original_start_time }} - {{ item.original_end_time }} {{ item.filename
+                  }}</span>
                 </li>
               </ul>
             </div>
@@ -210,7 +215,20 @@ const handleOpenPath = async (path: string) => {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    position: relative;
   }
+}
+.cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.5;
+  z-index: -1;
 }
 
 .item {
