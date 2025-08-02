@@ -17,3 +17,9 @@ html, body {
   -webkit-app-region: drag; /* 对于 macOS */
   pointer-events: auto; /* 确保鼠标事件可以被传递 */
 }
+
+.flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

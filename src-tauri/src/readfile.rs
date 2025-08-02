@@ -4,6 +4,7 @@ use std::fs;
 use std::path::Path;
 // #[allow(dead_code)]
 use serde::{Serialize, Deserialize};
+use tauri::ipc::Response;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TimeAndFile {
@@ -15,6 +16,7 @@ pub struct TimeAndFile {
 pub fn read_file(path: &Path) -> Result<Vec<TimeAndFile>, String> {
    // 读取文件并处理编码问题
     let file_path = path;
+    println!("Reading file: {:?}", file_path);
     let bytes = fs::read(Path::new(file_path)).unwrap();
     let (cow, _, _) = UTF_16LE.decode(&bytes);
     let content = cow.into_owned();
@@ -41,6 +43,16 @@ pub fn read_file(path: &Path) -> Result<Vec<TimeAndFile>, String> {
     }
     if result.is_empty() {
         return Err("No valid data found in the file".to_string());
+    } else {
+        println!("Parsed {} entries from the file", result.len());
     }
     Ok(result)
+}
+
+
+#[tauri::command]
+pub fn get_first_frame(path: &Path) -> Response {
+    let file_path = path;
+    let bytes = fs::read(Path::new(file_path)).unwrap();
+    tauri::ipc::Response::new(bytes)
 }

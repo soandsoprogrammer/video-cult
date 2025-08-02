@@ -26,17 +26,7 @@
           "name": "bin/ffmpeg",
           "cmd": "",
           "sidecar": true,
-          "args": [
-            "-i",
-            {
-              "validator": "\\S+"
-            },
-            "-vf",
-            "scale=1280:720",
-            {
-              "validator": "\\S+"
-            }
-          ]
+          "args": true
         }
       ]
     }
